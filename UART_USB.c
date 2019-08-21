@@ -1,0 +1,45 @@
+/*
+	UART communication on Raspberry Pi using C (WiringPi Library)
+	http://www.electronicwings.com
+*/
+
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+
+#include <wiringPi.h>
+#include <wiringSerial.h>
+
+int main()
+{
+    int serial_port;
+    char dat;
+    if ((serial_port = serialOpen("/dev/ttyUSB0", 9600)) < 0) { /* open serial port */
+	fprintf(stderr, "Unable to open serial device: %s\n",
+		strerror(errno));
+	return 1;
+    }
+
+    if (wiringPiSetup() == -1) { /* initializes wiringPi setup */
+	fprintf(stdout, "Unable to start wiringPi: %s\n", strerror(errno));
+	return 1;
+    }
+
+    serialPutchar(serial_port, 0x2E);
+    serialPutchar(serial_port, 0x01);
+    serialPutchar(serial_port, 0x02);
+    serialPutchar(serial_port, 0x40);
+    serialPutchar(serial_port, 0x00);
+    serialPutchar(serial_port, 0xBC);
+
+
+    while (1) {
+
+	if (serialDataAvail(serial_port)) {
+	    dat = serialGetchar(serial_port);	/* receive character serially */
+	    printf("%c", dat);
+	    fflush(stdout);
+	}
+    }
+
+}
